@@ -1,7 +1,7 @@
 # Plan de Pagos Familiar — Design
 
 **Fecha:** 2026-05-05
-**Autor:** Gonzalo Sardi (sardigonzalo04@gmail.com)
+**Autor:** Gonzalo Sardi (sardigonzalo01@gmail.com)
 **Estado:** Aprobado, listo para plan de implementación
 
 ---
