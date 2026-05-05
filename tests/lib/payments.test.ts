@@ -58,3 +58,24 @@ describe('computeDisplayStatus', () => {
     expect(computeDisplayStatus({ ...base, due_date: '2026-06-04' }, '2026-05-05')).toBe('futuro');
   });
 });
+
+import { nextDueDate } from '@/lib/payments';
+
+describe('nextDueDate', () => {
+  it('avanza 1 mes para mensual', () => {
+    expect(nextDueDate('2026-05-05', 1)).toBe('2026-06-05');
+  });
+
+  it('avanza 12 meses para anual', () => {
+    expect(nextDueDate('2026-05-05', 12)).toBe('2027-05-05');
+  });
+
+  it('maneja fin de mes (30 enero → 28/29 febrero)', () => {
+    expect(nextDueDate('2026-01-30', 1)).toBe('2026-02-28');
+    expect(nextDueDate('2024-01-30', 1)).toBe('2024-02-29');
+  });
+
+  it('maneja 31 → mes con 30 días', () => {
+    expect(nextDueDate('2026-03-31', 1)).toBe('2026-04-30');
+  });
+});

@@ -1,4 +1,4 @@
-import { differenceInCalendarDays, parseISO } from 'date-fns';
+import { addMonths, differenceInCalendarDays, format, parseISO } from 'date-fns';
 import type { Payment, DisplayStatus } from '@/lib/types';
 
 export function daysRemaining(dueDate: string, today: string): number {
@@ -13,4 +13,9 @@ export function computeDisplayStatus(payment: Payment, today: string): DisplaySt
   if (days <= 3) return 'urgente';
   if (days <= 7) return 'proximo';
   return 'futuro';
+}
+
+export function nextDueDate(currentDueDate: string, recurrenceMonths: number): string {
+  const next = addMonths(parseISO(currentDueDate), recurrenceMonths);
+  return format(next, 'yyyy-MM-dd');
 }
