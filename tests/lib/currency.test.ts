@@ -48,3 +48,17 @@ describe('combineTotals', () => {
     expect(result).toEqual({ usd: 0, uyu: 0, combinedUsd: 0 });
   });
 });
+
+import { formatAmount } from '@/lib/currency';
+
+describe('formatAmount', () => {
+  it('formato USD con 2 decimales', () => {
+    expect(formatAmount(20, 'USD')).toBe('$20,00 USD');
+    expect(formatAmount(6.5, 'USD')).toBe('$6,50 USD');
+  });
+
+  it('formato UYU sin decimales si es entero', () => {
+    expect(formatAmount(200, 'UYU')).toBe('$200 UYU');
+    expect(formatAmount(12.99, 'UYU')).toBe('$12,99 UYU');
+  });
+});

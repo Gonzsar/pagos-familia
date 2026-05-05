@@ -1,4 +1,4 @@
-import type { Payment } from '@/lib/types';
+import type { Currency, Payment } from '@/lib/types';
 
 export interface Totals {
   usd: number;
@@ -26,4 +26,16 @@ export function combineTotals(payments: Payment[], uyuPerUsd: number | null): To
 
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
+}
+
+export function formatAmount(amount: number, currency: Currency): string {
+  const isInt = Number.isInteger(amount);
+  if (currency === 'UYU' && isInt) {
+    return `$${amount.toLocaleString('es-UY')} UYU`;
+  }
+  const formatted = amount.toLocaleString('es-UY', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  return `$${formatted} ${currency}`;
 }
