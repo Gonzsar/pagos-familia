@@ -18,3 +18,43 @@ describe('daysRemaining', () => {
     expect(daysRemaining('2026-06-04', '2026-05-05')).toBe(30);
   });
 });
+
+import { computeDisplayStatus } from '@/lib/payments';
+import type { Payment } from '@/lib/types';
+
+const base: Payment = {
+  id: 'x', name: 'Test', amount: 10, currency: 'USD',
+  due_date: '2026-05-05', category_id: null, payment_method: null,
+  is_recurring: true, recurrence_months: 1,
+  status: 'pendiente', notify_enabled: true, notes: null,
+  created_by: null, created_at: '', updated_at: '',
+};
+
+describe('computeDisplayStatus', () => {
+  it('"pagado" si status=pagado, sin importar fecha', () => {
+    expect(computeDisplayStatus({ ...base, status: 'pagado', due_date: '2026-04-01' }, '2026-05-05')).toBe('pagado');
+  });
+
+  it('"vencido" si pendiente y due_date < hoy', () => {
+    expect(computeDisplayStatus({ ...base, due_date: '2026-05-04' }, '2026-05-05')).toBe('vencido');
+  });
+
+  it('"vence_hoy" si due_date == hoy', () => {
+    expect(computeDisplayStatus({ ...base, due_date: '2026-05-05' }, '2026-05-05')).toBe('vence_hoy');
+  });
+
+  it('"urgente" si faltan 1-3 días', () => {
+    expect(computeDisplayStatus({ ...base, due_date: '2026-05-08' }, '2026-05-05')).toBe('urgente');
+    expect(computeDisplayStatus({ ...base, due_date: '2026-05-06' }, '2026-05-05')).toBe('urgente');
+  });
+
+  it('"proximo" si faltan 4-7 días', () => {
+    expect(computeDisplayStatus({ ...base, due_date: '2026-05-12' }, '2026-05-05')).toBe('proximo');
+    expect(computeDisplayStatus({ ...base, due_date: '2026-05-09' }, '2026-05-05')).toBe('proximo');
+  });
+
+  it('"futuro" si faltan más de 7 días', () => {
+    expect(computeDisplayStatus({ ...base, due_date: '2026-05-13' }, '2026-05-05')).toBe('futuro');
+    expect(computeDisplayStatus({ ...base, due_date: '2026-06-04' }, '2026-05-05')).toBe('futuro');
+  });
+});
