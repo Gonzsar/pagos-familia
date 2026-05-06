@@ -38,7 +38,7 @@ export function statusStyle(status: DisplayStatus): {
       };
     case 'futuro':
       return {
-        badgeClass: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+        badgeClass: 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-100',
         dotClass: 'bg-slate-400',
         label: (d) => `Faltan ${d} d`,
       };

@@ -145,7 +145,7 @@ export function PaymentForm({ open, onOpenChange, payment, categories, onSaved, 
         aria-hidden="true"
       />
       <div
-        className="fixed right-0 top-0 z-50 h-full w-full sm:max-w-md bg-white dark:bg-slate-900 shadow-2xl overflow-y-auto border-l dark:border-slate-800 animate-panel-in flex flex-col"
+        className="fixed right-0 top-0 z-50 h-full w-full sm:max-w-md bg-white dark:bg-slate-900 shadow-2xl overflow-y-auto border-l dark:border-slate-800 animate-panel-in"
         role="dialog"
         aria-modal="true"
       >
@@ -161,7 +161,7 @@ export function PaymentForm({ open, onOpenChange, payment, categories, onSaved, 
           </button>
         </div>
 
-        <div className="flex-1 p-4 space-y-4">
+        <div className="p-4 space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Nombre</Label>
             <Input id="name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
@@ -250,7 +250,7 @@ export function PaymentForm({ open, onOpenChange, payment, categories, onSaved, 
           {error && <p className="text-sm text-red-600">{error}</p>}
         </div>
 
-        <div className="border-t dark:border-slate-800 p-4 pb-6 flex flex-col gap-3 bg-white dark:bg-slate-900">
+        <div className="px-4 pb-6 flex flex-col gap-3">
           <Button onClick={save} disabled={saving} className="w-full" size="lg">
             {saving ? 'Guardando...' : 'Guardar'}
           </Button>

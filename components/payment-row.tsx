@@ -22,6 +22,9 @@ export function PaymentRow({ payment, today, onEdit, onPay, isPaying }: Props) {
   const isPaid = status === 'pagado';
   const isUnicoPagado = !payment.is_recurring && isPaid;
   const isUnicoPendiente = !payment.is_recurring && !isPaid;
+  // Solo los pagos únicos tienen botón de pagar.
+  // Los recurrentes son automáticos en la vida real, así que solo importa ver la fecha del próximo vencimiento.
+  const showPayButton = !payment.is_recurring;
 
   let buttonLabel: string;
   let buttonClass: string;
@@ -50,6 +53,11 @@ export function PaymentRow({ payment, today, onEdit, onPay, isPaying }: Props) {
 
       <div className="flex-1 min-w-0">
         <p className={`font-medium truncate ${strikeClass}`}>{payment.name}</p>
+        {payment.notes && (
+          <p className="text-xs italic text-slate-500 dark:text-slate-400 truncate">
+            {payment.notes}
+          </p>
+        )}
         <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
           {payment.payment_method ?? '—'}
         </p>
@@ -59,11 +67,11 @@ export function PaymentRow({ payment, today, onEdit, onPay, isPaying }: Props) {
         {formatAmount(payment.amount, payment.currency)}
       </div>
 
-      <div className="hidden md:block text-right text-sm w-28 text-slate-600 dark:text-slate-400 tabular-nums">
+      <div className="hidden md:block text-right text-sm w-28 text-slate-800 dark:text-slate-200 font-medium tabular-nums">
         {payment.due_date.split('-').reverse().join('/')}
       </div>
 
-      <span className={`text-xs px-2 py-1 rounded-md whitespace-nowrap ${style.badgeClass}`}>
+      <span className={`text-xs px-2 py-1 rounded-md whitespace-nowrap font-medium ${style.badgeClass}`}>
         {style.label(days)}
       </span>
 
@@ -77,15 +85,17 @@ export function PaymentRow({ payment, today, onEdit, onPay, isPaying }: Props) {
         <Pencil className="h-4 w-4" />
       </Button>
 
-      <Button
-        size="sm"
-        onClick={() => onPay(payment)}
-        disabled={isPaying || isPaid}
-        className={`gap-1 transition-colors ${buttonClass}`}
-      >
-        <Check className="h-4 w-4" />
-        <span className="hidden sm:inline">{buttonLabel}</span>
-      </Button>
+      {showPayButton && (
+        <Button
+          size="sm"
+          onClick={() => onPay(payment)}
+          disabled={isPaying || isPaid}
+          className={`gap-1 transition-colors ${buttonClass}`}
+        >
+          <Check className="h-4 w-4" />
+          <span className="hidden sm:inline">{buttonLabel}</span>
+        </Button>
+      )}
     </div>
   );
 }
