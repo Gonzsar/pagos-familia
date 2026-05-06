@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { Trash2, X } from 'lucide-react';
 import type { Category, PaymentWithCategory, Currency } from '@/lib/types';
 
@@ -234,13 +233,30 @@ export function PaymentForm({ open, onOpenChange, payment, categories, onSaved, 
             </select>
           </div>
 
-          <div className="flex items-center justify-between rounded-lg border p-3">
+          <button
+            type="button"
+            onClick={() => setForm({ ...form, notify_enabled: !form.notify_enabled })}
+            className="flex items-center justify-between rounded-lg border dark:border-slate-700 p-3 w-full text-left hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
+            role="switch"
+            aria-checked={form.notify_enabled}
+          >
             <div>
-              <Label htmlFor="notify" className="font-medium">Recibir avisos</Label>
+              <p className="font-medium">Recibir avisos</p>
               <p className="text-xs text-slate-500">7, 3 y 1 días antes</p>
             </div>
-            <Switch id="notify" checked={form.notify_enabled} onCheckedChange={(v) => setForm({ ...form, notify_enabled: v })} />
-          </div>
+            <span
+              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
+                form.notify_enabled ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-700'
+              }`}
+              aria-hidden="true"
+            >
+              <span
+                className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                  form.notify_enabled ? 'translate-x-5' : 'translate-x-0.5'
+                }`}
+              />
+            </span>
+          </button>
 
           <div className="space-y-2">
             <Label htmlFor="notes">Notas (opcional)</Label>
