@@ -1,13 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Trash2 } from 'lucide-react';
+import { Trash2, X } from 'lucide-react';
 import type { Category, PaymentWithCategory, Currency } from '@/lib/types';
 
 interface Props {
@@ -27,7 +25,7 @@ interface FormData {
   category_id: string;
   payment_method: string;
   is_recurring: boolean;
-  recurrence_months: string;
+  recurrence_months: number;
   notify_enabled: boolean;
   notes: string;
 }
@@ -40,7 +38,7 @@ const empty = (): FormData => ({
   category_id: '',
   payment_method: '',
   is_recurring: true,
-  recurrence_months: '1',
+  recurrence_months: 1,
   notify_enabled: true,
   notes: '',
 });
@@ -54,11 +52,14 @@ function fromPayment(p: PaymentWithCategory): FormData {
     category_id: p.category_id ?? '',
     payment_method: p.payment_method ?? '',
     is_recurring: p.is_recurring,
-    recurrence_months: String(p.recurrence_months),
+    recurrence_months: p.recurrence_months,
     notify_enabled: p.notify_enabled,
     notes: p.notes ?? '',
   };
 }
+
+const selectClass =
+  'flex h-9 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500';
 
 export function PaymentForm({ open, onOpenChange, payment, categories, onSaved, onDeleted }: Props) {
   const [form, setForm] = useState<FormData>(empty());
@@ -69,6 +70,15 @@ export function PaymentForm({ open, onOpenChange, payment, categories, onSaved, 
     setForm(payment ? fromPayment(payment) : empty());
     setError(null);
   }, [payment, open]);
+
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onOpenChange(false);
+    }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open, onOpenChange]);
 
   async function save() {
     setSaving(true);
@@ -81,7 +91,7 @@ export function PaymentForm({ open, onOpenChange, payment, categories, onSaved, 
       category_id: form.category_id || null,
       payment_method: form.payment_method.trim() || null,
       is_recurring: form.is_recurring,
-      recurrence_months: parseInt(form.recurrence_months, 10),
+      recurrence_months: form.recurrence_months,
       notify_enabled: form.notify_enabled,
       notes: form.notes.trim() || null,
     };
@@ -121,17 +131,34 @@ export function PaymentForm({ open, onOpenChange, payment, categories, onSaved, 
     setSaving(false);
   }
 
-  return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="overflow-y-auto sm:max-w-md">
-        <SheetHeader>
-          <SheetTitle>{payment ? 'Editar pago' : 'Agregar pago'}</SheetTitle>
-          <SheetDescription>
-            {payment ? 'Modificá los detalles del pago.' : 'Completá los datos del nuevo pago.'}
-          </SheetDescription>
-        </SheetHeader>
+  if (!open) return null;
 
-        <div className="space-y-4 py-4 px-4">
+  const recurrenceValue = !form.is_recurring ? 'unico' : `m${form.recurrence_months}`;
+
+  return (
+    <>
+      <div
+        className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm animate-backdrop-in"
+        aria-hidden="true"
+      />
+      <div
+        className="fixed right-0 top-0 z-50 h-full w-full sm:max-w-md bg-white dark:bg-slate-900 shadow-2xl overflow-y-auto border-l dark:border-slate-800 animate-panel-in flex flex-col"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div className="flex items-center justify-between p-4 border-b dark:border-slate-800 sticky top-0 bg-white dark:bg-slate-900 z-10">
+          <h2 className="text-lg font-semibold">{payment ? 'Editar pago' : 'Agregar pago'}</h2>
+          <button
+            type="button"
+            onClick={() => onOpenChange(false)}
+            className="rounded-md p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            aria-label="Cerrar"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="flex-1 p-4 space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Nombre</Label>
             <Input id="name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
@@ -144,13 +171,15 @@ export function PaymentForm({ open, onOpenChange, payment, categories, onSaved, 
             </div>
             <div className="space-y-2">
               <Label htmlFor="currency">Moneda</Label>
-              <Select value={form.currency} onValueChange={(v) => setForm({ ...form, currency: v as Currency })}>
-                <SelectTrigger id="currency"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="USD">USD</SelectItem>
-                  <SelectItem value="UYU">UYU</SelectItem>
-                </SelectContent>
-              </Select>
+              <select
+                id="currency"
+                value={form.currency}
+                onChange={e => setForm({ ...form, currency: e.target.value as Currency })}
+                className={selectClass}
+              >
+                <option value="USD">USD</option>
+                <option value="UYU">UYU</option>
+              </select>
             </div>
           </div>
 
@@ -161,15 +190,17 @@ export function PaymentForm({ open, onOpenChange, payment, categories, onSaved, 
 
           <div className="space-y-2">
             <Label htmlFor="category">Categoría</Label>
-            <Select value={form.category_id || 'none'} onValueChange={(v) => setForm({ ...form, category_id: v === 'none' ? '' : (v as string) })}>
-              <SelectTrigger id="category"><SelectValue placeholder="Sin categoría" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Sin categoría</SelectItem>
-                {categories.map(c => (
-                  <SelectItem key={c.id} value={c.id}>{c.icon} {c.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <select
+              id="category"
+              value={form.category_id}
+              onChange={e => setForm({ ...form, category_id: e.target.value })}
+              className={selectClass}
+            >
+              <option value="">Sin categoría</option>
+              {categories.map(c => (
+                <option key={c.id} value={c.id}>{c.icon ? `${c.icon} ` : ''}{c.name}</option>
+              ))}
+            </select>
           </div>
 
           <div className="space-y-2">
@@ -177,20 +208,28 @@ export function PaymentForm({ open, onOpenChange, payment, categories, onSaved, 
             <Input id="method" placeholder="ej: PREX GON" value={form.payment_method} onChange={e => setForm({ ...form, payment_method: e.target.value })} />
           </div>
 
-          <div className="flex items-center justify-between rounded-lg border p-3">
-            <div>
-              <Label htmlFor="recurring" className="font-medium">Recurrente</Label>
-              <p className="text-xs text-slate-500">Se renueva solo al marcar pagado</p>
-            </div>
-            <Switch id="recurring" checked={form.is_recurring} onCheckedChange={(v) => setForm({ ...form, is_recurring: v })} />
+          <div className="space-y-2">
+            <Label htmlFor="recurrence">Recurrencia</Label>
+            <select
+              id="recurrence"
+              value={recurrenceValue}
+              onChange={e => {
+                const v = e.target.value;
+                if (v === 'unico') {
+                  setForm({ ...form, is_recurring: false, recurrence_months: 1 });
+                } else {
+                  setForm({ ...form, is_recurring: true, recurrence_months: parseInt(v.slice(1), 10) });
+                }
+              }}
+              className={selectClass}
+            >
+              <option value="unico">Pago único</option>
+              <option value="m1">Cada mes</option>
+              <option value="m3">Cada 3 meses</option>
+              <option value="m6">Cada 6 meses</option>
+              <option value="m12">Cada año</option>
+            </select>
           </div>
-
-          {form.is_recurring && (
-            <div className="space-y-2">
-              <Label htmlFor="recurrence">Cada cuántos meses</Label>
-              <Input id="recurrence" type="number" min="1" value={form.recurrence_months} onChange={e => setForm({ ...form, recurrence_months: e.target.value })} />
-            </div>
-          )}
 
           <div className="flex items-center justify-between rounded-lg border p-3">
             <div>
@@ -208,17 +247,17 @@ export function PaymentForm({ open, onOpenChange, payment, categories, onSaved, 
           {error && <p className="text-sm text-red-600">{error}</p>}
         </div>
 
-        <SheetFooter className="gap-2 sm:gap-2 sm:flex-col-reverse">
-          <Button onClick={save} disabled={saving} className="w-full">
-            {saving ? 'Guardando...' : 'Guardar'}
-          </Button>
+        <div className="border-t dark:border-slate-800 p-4 flex flex-col-reverse gap-2 sticky bottom-0 bg-white dark:bg-slate-900">
           {payment && (
-            <Button variant="outline" onClick={remove} disabled={saving} className="w-full text-red-600 hover:text-red-700">
+            <Button variant="outline" onClick={remove} disabled={saving} className="w-full text-red-600 hover:text-red-700 transition-colors">
               <Trash2 className="h-4 w-4 mr-2" /> Borrar pago
             </Button>
           )}
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+          <Button onClick={save} disabled={saving} className="w-full transition-colors">
+            {saving ? 'Guardando...' : 'Guardar'}
+          </Button>
+        </div>
+      </div>
+    </>
   );
 }
