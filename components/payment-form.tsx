@@ -65,10 +65,12 @@ export function PaymentForm({ open, onOpenChange, payment, categories, onSaved, 
   const [form, setForm] = useState<FormData>(empty());
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     setForm(payment ? fromPayment(payment) : empty());
     setError(null);
+    setConfirmDelete(false);
   }, [payment, open]);
 
   useEffect(() => {
@@ -117,13 +119,14 @@ export function PaymentForm({ open, onOpenChange, payment, categories, onSaved, 
     setSaving(false);
   }
 
-  async function remove() {
+  async function actuallyDelete() {
     if (!payment) return;
-    if (!confirm(`¿Borrar "${payment.name}"? Esta acción no se puede deshacer.`)) return;
     setSaving(true);
+    setError(null);
     const res = await fetch(`/api/payments/${payment.id}`, { method: 'DELETE' });
     if (res.ok) {
       onDeleted(payment.id);
+      setConfirmDelete(false);
       onOpenChange(false);
     } else {
       setError('Error al borrar');
@@ -247,16 +250,58 @@ export function PaymentForm({ open, onOpenChange, payment, categories, onSaved, 
           {error && <p className="text-sm text-red-600">{error}</p>}
         </div>
 
-        <div className="border-t dark:border-slate-800 p-4 flex flex-col-reverse gap-2 sticky bottom-0 bg-white dark:bg-slate-900">
+        <div className="border-t dark:border-slate-800 p-4 pb-6 flex flex-col gap-3 bg-white dark:bg-slate-900">
+          <Button onClick={save} disabled={saving} className="w-full" size="lg">
+            {saving ? 'Guardando...' : 'Guardar'}
+          </Button>
           {payment && (
-            <Button variant="outline" onClick={remove} disabled={saving} className="w-full text-red-600 hover:text-red-700 transition-colors">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setConfirmDelete(true)}
+              disabled={saving}
+              className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 border-red-200 dark:border-red-900/50"
+            >
               <Trash2 className="h-4 w-4 mr-2" /> Borrar pago
             </Button>
           )}
-          <Button onClick={save} disabled={saving} className="w-full transition-colors">
-            {saving ? 'Guardando...' : 'Guardar'}
-          </Button>
         </div>
+
+        {confirmDelete && (
+          <div
+            className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-backdrop-in p-4"
+            onClick={() => setConfirmDelete(false)}
+          >
+            <div
+              className="w-full max-w-sm rounded-xl bg-white dark:bg-slate-800 p-5 shadow-xl border dark:border-slate-700"
+              onClick={e => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-semibold mb-2">¿Borrar pago?</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                Esta acción no se puede deshacer. Se eliminará &quot;<strong>{payment?.name}</strong>&quot; permanentemente.
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setConfirmDelete(false)}
+                  disabled={saving}
+                  className="flex-1"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="button"
+                  onClick={actuallyDelete}
+                  disabled={saving}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                >
+                  {saving ? 'Borrando...' : 'Sí, borrar'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
