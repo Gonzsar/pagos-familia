@@ -31,8 +31,9 @@ export async function updateSession(request: NextRequest) {
   const url = request.nextUrl;
   const isPublic =
     url.pathname.startsWith('/login') ||
-    url.pathname.startsWith('/auth') ||         // /auth/callback
-    url.pathname.startsWith('/api/auth');       // /api/auth/magic-link, /api/auth/logout
+    url.pathname.startsWith('/auth') ||                  // /auth/callback
+    url.pathname.startsWith('/api/auth') ||              // /api/auth/magic-link, /api/auth/logout
+    url.pathname.startsWith('/api/telegram/webhook');    // Telegram bot webhook (auth via secret token)
 
   if (!user && !isPublic) {
     return NextResponse.redirect(new URL('/login', url));
