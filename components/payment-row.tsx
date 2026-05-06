@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, Pencil } from 'lucide-react';
+import { Check, Pencil, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatAmount } from '@/lib/currency';
 import { computeDisplayStatus, daysRemaining } from '@/lib/payments';
@@ -52,7 +52,18 @@ export function PaymentRow({ payment, today, onEdit, onPay, isPaying }: Props) {
       <span className={`h-2 w-2 rounded-full ${style.dotClass}`} aria-hidden />
 
       <div className="flex-1 min-w-0">
-        <p className={`font-medium truncate ${strikeClass}`}>{payment.name}</p>
+        <p className={`font-medium truncate flex items-center gap-1.5 ${strikeClass}`}>
+          {payment.name}
+          {payment.count_in_totals === false && (
+            <span
+              className="inline-flex items-center gap-0.5 text-[10px] font-normal text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded"
+              title="Este pago no se suma al total"
+            >
+              <EyeOff className="h-3 w-3" />
+              No suma
+            </span>
+          )}
+        </p>
         {payment.notes && (
           <p className="text-xs italic text-slate-500 dark:text-slate-400 truncate">
             {payment.notes}

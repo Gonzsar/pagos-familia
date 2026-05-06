@@ -23,6 +23,7 @@ const createSchema = z.object({
   is_recurring: z.boolean(),
   recurrence_months: z.number().int().positive(),
   notify_enabled: z.boolean().optional().default(true),
+  count_in_totals: z.boolean().optional().default(true),
   notes: z.string().max(500).nullable().optional(),
 });
 

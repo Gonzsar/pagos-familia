@@ -26,7 +26,7 @@ const base: Payment = {
   id: 'x', name: 'Test', amount: 10, currency: 'USD',
   due_date: '2026-05-05', category_id: null, payment_method: null,
   is_recurring: true, recurrence_months: 1,
-  status: 'pendiente', notify_enabled: true, notes: null,
+  status: 'pendiente', notify_enabled: true, count_in_totals: true, notes: null,
   created_by: null, created_at: '', updated_at: '',
 };
 

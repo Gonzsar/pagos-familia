@@ -13,6 +13,7 @@ const updateSchema = z.object({
   recurrence_months: z.number().int().positive().optional(),
   status: z.enum(['pendiente', 'pagado']).optional(),
   notify_enabled: z.boolean().optional(),
+  count_in_totals: z.boolean().optional(),
   notes: z.string().max(500).nullable().optional(),
 });
 

@@ -26,6 +26,7 @@ interface FormData {
   is_recurring: boolean;
   recurrence_months: number;
   notify_enabled: boolean;
+  count_in_totals: boolean;
   notes: string;
 }
 
@@ -39,6 +40,7 @@ const empty = (): FormData => ({
   is_recurring: true,
   recurrence_months: 1,
   notify_enabled: true,
+  count_in_totals: true,
   notes: '',
 });
 
@@ -53,6 +55,7 @@ function fromPayment(p: PaymentWithCategory): FormData {
     is_recurring: p.is_recurring,
     recurrence_months: p.recurrence_months,
     notify_enabled: p.notify_enabled,
+    count_in_totals: p.count_in_totals !== false,  // tolerar undefined en datos viejos
     notes: p.notes ?? '',
   };
 }
@@ -94,6 +97,7 @@ export function PaymentForm({ open, onOpenChange, payment, categories, onSaved, 
       is_recurring: form.is_recurring,
       recurrence_months: form.recurrence_months,
       notify_enabled: form.notify_enabled,
+      count_in_totals: form.count_in_totals,
       notes: form.notes.trim() || null,
     };
 
@@ -253,6 +257,31 @@ export function PaymentForm({ open, onOpenChange, payment, categories, onSaved, 
               <span
                 className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
                   form.notify_enabled ? 'translate-x-5' : 'translate-x-0.5'
+                }`}
+              />
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setForm({ ...form, count_in_totals: !form.count_in_totals })}
+            className="flex items-center justify-between rounded-lg border dark:border-slate-700 p-3 w-full text-left hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
+            role="switch"
+            aria-checked={form.count_in_totals}
+          >
+            <div>
+              <p className="font-medium">Sumar al total</p>
+              <p className="text-xs text-slate-500">Si está apagado, este pago no se incluye en los totales del dashboard.</p>
+            </div>
+            <span
+              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
+                form.count_in_totals ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-700'
+              }`}
+              aria-hidden="true"
+            >
+              <span
+                className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                  form.count_in_totals ? 'translate-x-5' : 'translate-x-0.5'
                 }`}
               />
             </span>

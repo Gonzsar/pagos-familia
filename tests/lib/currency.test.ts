@@ -2,7 +2,12 @@ import { describe, it, expect } from 'vitest';
 import { combineTotals, type Totals } from '@/lib/currency';
 import type { Payment } from '@/lib/types';
 
-const p = (currency: 'USD' | 'UYU', amount: number, status: 'pendiente' | 'pagado' = 'pendiente'): Payment => ({
+const p = (
+  currency: 'USD' | 'UYU',
+  amount: number,
+  status: 'pendiente' | 'pagado' = 'pendiente',
+  countInTotals: boolean = true,
+): Payment => ({
   id: Math.random().toString(),
   name: 'x',
   amount,
@@ -14,6 +19,7 @@ const p = (currency: 'USD' | 'UYU', amount: number, status: 'pendiente' | 'pagad
   recurrence_months: 1,
   status,
   notify_enabled: true,
+  count_in_totals: countInTotals,
   notes: null,
   created_by: null,
   created_at: '',
@@ -35,6 +41,11 @@ describe('combineTotals', () => {
 
   it('ignora pagos pagados', () => {
     const result = combineTotals([p('USD', 10), p('USD', 20, 'pagado')], 40);
+    expect(result.usd).toBe(10);
+  });
+
+  it('ignora pagos con count_in_totals=false', () => {
+    const result = combineTotals([p('USD', 10), p('USD', 50, 'pendiente', false)], 40);
     expect(result.usd).toBe(10);
   });
 

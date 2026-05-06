@@ -51,6 +51,8 @@ export default function DashboardPage() {
     let venceHoy = 0;
     let estaSemana = 0;
     for (const p of payments) {
+      // No alertar sobre pagos marcados como "no suma al total" — son los que el usuario consideró no importantes.
+      if (p.count_in_totals === false) continue;
       const s = computeDisplayStatus(p, today);
       if (s === 'vence_hoy' || s === 'vencido') venceHoy++;
       else if (s === 'urgente' || s === 'proximo') estaSemana++;

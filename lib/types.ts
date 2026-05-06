@@ -22,6 +22,7 @@ export interface Payment {
   recurrence_months: number;
   status: PaymentStatus;
   notify_enabled: boolean;
+  count_in_totals: boolean;
   notes: string | null;
   created_by: string | null;
   created_at: string;

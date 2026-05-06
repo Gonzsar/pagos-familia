@@ -7,7 +7,9 @@ export interface Totals {
 }
 
 export function combineTotals(payments: Payment[], uyuPerUsd: number | null): Totals {
-  const pending = payments.filter(p => p.status === 'pendiente');
+  // Solo pagos pendientes que están marcados para sumar al total.
+  // El campo count_in_totals puede ser undefined en datos viejos: tratamos undefined como true.
+  const pending = payments.filter(p => p.status === 'pendiente' && p.count_in_totals !== false);
 
   const usd = round2(pending.filter(p => p.currency === 'USD').reduce((s, p) => s + p.amount, 0));
   const uyu = round2(pending.filter(p => p.currency === 'UYU').reduce((s, p) => s + p.amount, 0));
