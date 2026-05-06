@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -46,22 +47,26 @@ export function AppHeader({ userEmail }: Props) {
             }
           />
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>{userEmail}</DropdownMenuLabel>
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>{userEmail}</DropdownMenuLabel>
+            </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              render={
-                <Link href="/history" className="flex items-center gap-2">
-                  <History className="h-4 w-4" /> Historial
-                </Link>
-              }
-            />
-            <DropdownMenuItem
-              render={
-                <Link href="/settings" className="flex items-center gap-2">
-                  <Settings className="h-4 w-4" /> Configuración
-                </Link>
-              }
-            />
+            <DropdownMenuGroup>
+              <DropdownMenuItem
+                render={
+                  <Link href="/history" className="flex items-center gap-2">
+                    <History className="h-4 w-4" /> Historial
+                  </Link>
+                }
+              />
+              <DropdownMenuItem
+                render={
+                  <Link href="/settings" className="flex items-center gap-2">
+                    <Settings className="h-4 w-4" /> Configuración
+                  </Link>
+                }
+              />
+            </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout} className="flex items-center gap-2 text-red-600">
               <LogOut className="h-4 w-4" /> Cerrar sesión
