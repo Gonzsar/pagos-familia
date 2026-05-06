@@ -20,6 +20,23 @@ export function PaymentRow({ payment, today, onEdit, onPay, isPaying }: Props) {
   const days = daysRemaining(payment.due_date, today);
   const style = statusStyle(status);
   const isPaid = status === 'pagado';
+  const isUnicoPagado = !payment.is_recurring && isPaid;
+  const isUnicoPendiente = !payment.is_recurring && !isPaid;
+
+  let buttonLabel: string;
+  let buttonClass: string;
+  if (isUnicoPagado) {
+    buttonLabel = 'Pagado';
+    buttonClass = 'bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-100';
+  } else if (isUnicoPendiente) {
+    buttonLabel = 'No pagado';
+    buttonClass = 'bg-red-600 hover:bg-red-700 text-white';
+  } else {
+    buttonLabel = 'Pagar';
+    buttonClass = '';
+  }
+
+  const strikeClass = isUnicoPagado ? 'line-through text-slate-500 dark:text-slate-500' : '';
 
   return (
     <div
@@ -32,13 +49,13 @@ export function PaymentRow({ payment, today, onEdit, onPay, isPaying }: Props) {
       <span className={`h-2 w-2 rounded-full ${style.dotClass}`} aria-hidden />
 
       <div className="flex-1 min-w-0">
-        <p className="font-medium truncate">{payment.name}</p>
+        <p className={`font-medium truncate ${strikeClass}`}>{payment.name}</p>
         <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
           {payment.payment_method ?? '—'}
         </p>
       </div>
 
-      <div className="hidden sm:block text-right tabular-nums font-mono text-sm w-32">
+      <div className={`hidden sm:block text-right tabular-nums font-mono text-sm w-32 ${strikeClass}`}>
         {formatAmount(payment.amount, payment.currency)}
       </div>
 
@@ -54,7 +71,7 @@ export function PaymentRow({ payment, today, onEdit, onPay, isPaying }: Props) {
         size="sm"
         variant="ghost"
         onClick={() => onEdit(payment)}
-        className="opacity-0 group-hover:opacity-100 transition-opacity"
+        className="opacity-60 hover:opacity-100 text-slate-500 dark:text-slate-400 transition-opacity"
         aria-label="Editar"
       >
         <Pencil className="h-4 w-4" />
@@ -64,12 +81,10 @@ export function PaymentRow({ payment, today, onEdit, onPay, isPaying }: Props) {
         size="sm"
         onClick={() => onPay(payment)}
         disabled={isPaying || isPaid}
-        className={`gap-1 transition-colors ${
-          isPaid ? 'bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-100' : ''
-        }`}
+        className={`gap-1 transition-colors ${buttonClass}`}
       >
         <Check className="h-4 w-4" />
-        <span className="hidden sm:inline">{isPaid ? 'Pagado' : 'Pagar'}</span>
+        <span className="hidden sm:inline">{buttonLabel}</span>
       </Button>
     </div>
   );
