@@ -4,9 +4,10 @@ import { useEffect, useState } from 'react';
 import { Plus, Trash2, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import type { Category } from '@/lib/types';
+
+const cardClass = 'rounded-xl border bg-white dark:bg-slate-900 dark:border-slate-800';
 
 export function CategoriesSettings() {
   const [cats, setCats] = useState<Category[]>([]);
@@ -80,26 +81,24 @@ export function CategoriesSettings() {
 
   return (
     <div className="space-y-4">
-      <Card>
-        <CardContent className="flex flex-wrap items-end gap-2 p-4">
-          <div className="space-y-1 w-20">
-            <label className="text-xs text-slate-600 dark:text-slate-400">Icono</label>
-            <Input value={newIcon} onChange={e => setNewIcon(e.target.value)} className="text-center text-lg" maxLength={4} />
-          </div>
-          <div className="space-y-1 flex-1 min-w-[200px]">
-            <label className="text-xs text-slate-600 dark:text-slate-400">Nombre</label>
-            <Input
-              placeholder="Nueva categoría"
-              value={newName}
-              onChange={e => setNewName(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && add()}
-            />
-          </div>
-          <Button onClick={add} disabled={creating || !newName.trim()}>
-            <Plus className="h-4 w-4 mr-1" /> Crear
-          </Button>
-        </CardContent>
-      </Card>
+      <div className={`${cardClass} flex flex-wrap items-end gap-2 p-4`}>
+        <div className="space-y-1 w-20">
+          <label className="text-xs text-slate-600 dark:text-slate-400">Icono</label>
+          <Input value={newIcon} onChange={e => setNewIcon(e.target.value)} className="text-center text-lg" maxLength={4} />
+        </div>
+        <div className="space-y-1 flex-1 min-w-[200px]">
+          <label className="text-xs text-slate-600 dark:text-slate-400">Nombre</label>
+          <Input
+            placeholder="Nueva categoría"
+            value={newName}
+            onChange={e => setNewName(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && add()}
+          />
+        </div>
+        <Button onClick={add} disabled={creating || !newName.trim()}>
+          <Plus className="h-4 w-4 mr-1" /> Crear
+        </Button>
+      </div>
 
       <div className="space-y-3">
         {cats.length === 0 ? (
@@ -135,7 +134,7 @@ export function CategoriesSettings() {
                 variant="outline"
                 onClick={() => setConfirmingDelete(null)}
                 disabled={deleting}
-                className="flex-1"
+                className="flex-1 text-slate-900 dark:text-slate-100"
               >
                 Cancelar
               </Button>
@@ -176,17 +175,26 @@ function CategoryRow({
   }
 
   return (
-    <Card>
-      <CardContent className="flex flex-wrap items-center gap-2 p-3">
-        <Input value={icon} onChange={e => setIcon(e.target.value)} className="w-16 text-center text-lg" maxLength={4} />
-        <Input value={name} onChange={e => setName(e.target.value)} className="flex-1 min-w-[180px]" />
-        <Button size="sm" variant="outline" onClick={save} disabled={!dirty || saving}>
-          <Save className="h-4 w-4 mr-1" /> Guardar
-        </Button>
-        <Button size="sm" variant="ghost" onClick={onDelete} className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30">
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </CardContent>
-    </Card>
+    <div className={`${cardClass} flex flex-wrap items-center gap-2 p-3`}>
+      <Input value={icon} onChange={e => setIcon(e.target.value)} className="w-16 text-center text-lg" maxLength={4} />
+      <Input value={name} onChange={e => setName(e.target.value)} className="flex-1 min-w-[180px]" />
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={save}
+        disabled={!dirty || saving}
+        className="text-slate-900 dark:text-slate-100"
+      >
+        <Save className="h-4 w-4 mr-1" /> Guardar
+      </Button>
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={onDelete}
+        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
+      >
+        <Trash2 className="h-4 w-4" />
+      </Button>
+    </div>
   );
 }

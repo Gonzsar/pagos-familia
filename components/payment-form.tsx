@@ -286,7 +286,7 @@ export function PaymentForm({ open, onOpenChange, payment, categories, onSaved, 
                   variant="outline"
                   onClick={() => setConfirmDelete(false)}
                   disabled={saving}
-                  className="flex-1"
+                  className="flex-1 text-slate-900 dark:text-slate-100"
                 >
                   Cancelar
                 </Button>

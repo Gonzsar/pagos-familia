@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { formatAmount } from '@/lib/currency';
@@ -58,25 +57,23 @@ export default function HistoryPage() {
         </p>
       </div>
 
-      <Card>
-        <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4">
-          <div className="space-y-2">
-            <Label htmlFor="from">Desde</Label>
-            <Input id="from" type="date" value={from} onChange={e => setFrom(e.target.value)} />
+      <div className="rounded-xl border bg-white dark:bg-slate-900 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-4 p-4">
+        <div className="space-y-2">
+          <Label htmlFor="from">Desde</Label>
+          <Input id="from" type="date" value={from} onChange={e => setFrom(e.target.value)} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="to">Hasta</Label>
+          <Input id="to" type="date" value={to} onChange={e => setTo(e.target.value)} />
+        </div>
+        <div className="space-y-2">
+          <Label>Total pagado</Label>
+          <div className="font-display text-sm tabular-nums space-y-1 pt-1">
+            <div>USD: <strong>${totals.usd.toFixed(2)}</strong></div>
+            <div>UYU: <strong>${totals.uyu.toFixed(2)}</strong></div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="to">Hasta</Label>
-            <Input id="to" type="date" value={to} onChange={e => setTo(e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label>Total pagado</Label>
-            <div className="font-mono text-sm tabular-nums space-y-1 pt-1">
-              <div>USD: <strong>${totals.usd.toFixed(2)}</strong></div>
-              <div>UYU: <strong>${totals.uyu.toFixed(2)}</strong></div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {loading ? (
         <p className="text-slate-500">Cargando...</p>
@@ -96,7 +93,7 @@ export default function HistoryPage() {
                   {new Date(e.paid_at).toLocaleString('es-UY', { dateStyle: 'short', timeStyle: 'short' })}
                 </p>
               </div>
-              <div className="font-mono text-sm tabular-nums whitespace-nowrap">
+              <div className="font-display text-sm font-semibold tabular-nums whitespace-nowrap">
                 {formatAmount(e.paid_amount, e.paid_currency)}
               </div>
             </div>
