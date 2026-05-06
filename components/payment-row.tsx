@@ -19,9 +19,16 @@ export function PaymentRow({ payment, today, onEdit, onPay, isPaying }: Props) {
   const status = computeDisplayStatus(payment, today);
   const days = daysRemaining(payment.due_date, today);
   const style = statusStyle(status);
+  const isPaid = status === 'pagado';
 
   return (
-    <div className="group flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 px-4 py-3 last:border-b-0 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+    <div
+      className={`group flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 px-4 py-3 last:border-b-0 transition-colors ${
+        isPaid
+          ? 'bg-emerald-50 dark:bg-emerald-900/10 hover:bg-emerald-100/60 dark:hover:bg-emerald-900/20'
+          : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'
+      }`}
+    >
       <span className={`h-2 w-2 rounded-full ${style.dotClass}`} aria-hidden />
 
       <div className="flex-1 min-w-0">
@@ -56,11 +63,13 @@ export function PaymentRow({ payment, today, onEdit, onPay, isPaying }: Props) {
       <Button
         size="sm"
         onClick={() => onPay(payment)}
-        disabled={isPaying || status === 'pagado'}
-        className="gap-1"
+        disabled={isPaying || isPaid}
+        className={`gap-1 transition-colors ${
+          isPaid ? 'bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-100' : ''
+        }`}
       >
         <Check className="h-4 w-4" />
-        <span className="hidden sm:inline">Pagar</span>
+        <span className="hidden sm:inline">{isPaid ? 'Pagado' : 'Pagar'}</span>
       </Button>
     </div>
   );
