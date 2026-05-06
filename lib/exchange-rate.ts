@@ -21,8 +21,12 @@ export async function getUyuPerUsd(): Promise<number | null> {
     const avg = (Number(data.compra) + Number(data.venta)) / 2;
     if (!Number.isFinite(avg) || avg <= 0) return cache?.uyuPerUsd ?? null;
 
-    cache = { uyuPerUsd: avg, fetchedAt: Date.now() };
-    return avg;
+    // Ajuste +1: la cotización oficial suele estar un peso por debajo del valor real
+    // al que se cambia en la calle / casas de cambio.
+    const adjusted = avg + 1;
+
+    cache = { uyuPerUsd: adjusted, fetchedAt: Date.now() };
+    return adjusted;
   } catch {
     return cache?.uyuPerUsd ?? null;
   }
