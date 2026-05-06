@@ -127,7 +127,7 @@ export default function DashboardPage() {
       )}
 
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Pagos</h1>
+        <h1 className="text-3xl font-bold">Pagos</h1>
         <Button onClick={openNew}>
           <Plus className="h-4 w-4 mr-1" /> Agregar pago
         </Button>
@@ -138,23 +138,35 @@ export default function DashboardPage() {
           Todavía no agregaste pagos. Click en "Agregar pago" para empezar.
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-6">
           {grouped.map(({ category, payments: ps }) => (
-            <div key={category?.id ?? 'sin'} className="rounded-xl border bg-white dark:bg-slate-900 dark:border-slate-800 overflow-hidden">
-              <div className="border-b border-slate-100 dark:border-slate-800 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                {category ? `${category.icon ?? ''} ${category.name}` : 'Sin categoría'}
+            <section key={category?.id ?? 'sin'} className="space-y-3">
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                {category ? (
+                  <>
+                    {category.icon && <span className="text-2xl">{category.icon}</span>}
+                    {category.name}
+                  </>
+                ) : (
+                  'Sin categoría'
+                )}
+                <span className="ml-auto text-sm font-normal text-slate-500">
+                  {ps.length} {ps.length === 1 ? 'pago' : 'pagos'}
+                </span>
+              </h2>
+              <div className="rounded-xl border bg-white dark:bg-slate-900 dark:border-slate-800 overflow-hidden">
+                {ps.map(p => (
+                  <PaymentRow
+                    key={p.id}
+                    payment={p}
+                    today={today}
+                    onEdit={openEdit}
+                    onPay={pay}
+                    isPaying={payingId === p.id}
+                  />
+                ))}
               </div>
-              {ps.map(p => (
-                <PaymentRow
-                  key={p.id}
-                  payment={p}
-                  today={today}
-                  onEdit={openEdit}
-                  onPay={pay}
-                  isPaying={payingId === p.id}
-                />
-              ))}
-            </div>
+            </section>
           ))}
         </div>
       )}
