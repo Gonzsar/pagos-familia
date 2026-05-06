@@ -29,7 +29,7 @@ export function TotalsCards({ totals, uyuPerUsd }: Props) {
             <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Total USD</p>
             <DollarSign className="h-5 w-5 text-blue-600" />
           </div>
-          <p className="mt-2 font-mono text-3xl font-semibold tabular-nums">
+          <p className="mt-2 font-display text-3xl font-semibold tabular-nums">
             ${formatUsdNumber(totals.usd)}
           </p>
         </CardContent>
@@ -41,7 +41,7 @@ export function TotalsCards({ totals, uyuPerUsd }: Props) {
             <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Total UYU</p>
             <Coins className="h-5 w-5 text-emerald-600" />
           </div>
-          <p className="mt-2 font-mono text-3xl font-semibold tabular-nums">
+          <p className="mt-2 font-display text-3xl font-semibold tabular-nums">
             ${formatUyuNumber(totals.uyu)}
           </p>
         </CardContent>
@@ -55,7 +55,7 @@ export function TotalsCards({ totals, uyuPerUsd }: Props) {
           </div>
           {totals.combinedUsd !== null ? (
             <>
-              <p className="mt-2 font-mono text-3xl font-semibold tabular-nums">
+              <p className="mt-2 font-display text-3xl font-semibold tabular-nums">
                 ~${formatUsdNumber(totals.combinedUsd)}
               </p>
               {uyuPerUsd && (
