@@ -178,15 +178,16 @@ function CategoryRow({
     <div className={`${cardClass} flex flex-wrap items-center gap-2 p-3`}>
       <Input value={icon} onChange={e => setIcon(e.target.value)} className="w-16 text-center text-lg" maxLength={4} />
       <Input value={name} onChange={e => setName(e.target.value)} className="flex-1 min-w-[180px]" />
-      <Button
-        size="sm"
-        variant="outline"
-        onClick={save}
-        disabled={!dirty || saving}
-        className="text-slate-900 dark:text-slate-100"
-      >
-        <Save className="h-4 w-4 mr-1" /> Guardar
-      </Button>
+      {dirty && (
+        <Button
+          size="sm"
+          onClick={save}
+          disabled={saving}
+          className="bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          <Save className="h-4 w-4 mr-1" /> {saving ? 'Guardando...' : 'Guardar'}
+        </Button>
+      )}
       <Button
         size="sm"
         variant="ghost"
