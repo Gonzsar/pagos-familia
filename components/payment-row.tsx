@@ -3,7 +3,7 @@
 import { Check, Pencil, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatAmount } from '@/lib/currency';
-import { computeDisplayStatus, daysRemaining } from '@/lib/payments';
+import { computeDisplayStatus, daysRemaining, effectiveDueDate } from '@/lib/payments';
 import { statusStyle } from '@/lib/styles';
 import type { PaymentWithCategory } from '@/lib/types';
 
@@ -16,8 +16,11 @@ interface Props {
 }
 
 export function PaymentRow({ payment, today, onEdit, onPay, isPaying }: Props) {
-  const status = computeDisplayStatus(payment, today);
-  const days = daysRemaining(payment.due_date, today);
+  // Para recurrentes que ya pasaron su due_date en la DB (cobrados auto), avanzamos al próximo ciclo.
+  const displayDate = effectiveDueDate(payment, today);
+  const displayPayment = displayDate === payment.due_date ? payment : { ...payment, due_date: displayDate };
+  const status = computeDisplayStatus(displayPayment, today);
+  const days = daysRemaining(displayDate, today);
   const style = statusStyle(status);
   const isPaid = status === 'pagado';
   const isUnicoPagado = !payment.is_recurring && isPaid;
@@ -79,7 +82,7 @@ export function PaymentRow({ payment, today, onEdit, onPay, isPaying }: Props) {
       </div>
 
       <div className="hidden md:block text-right text-sm w-28 text-slate-800 dark:text-slate-200 font-medium tabular-nums">
-        {payment.due_date.split('-').reverse().join('/')}
+        {displayDate.split('-').reverse().join('/')}
       </div>
 
       <span className={`text-xs px-2 py-1 rounded-md whitespace-nowrap font-medium ${style.badgeClass}`}>

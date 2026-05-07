@@ -79,3 +79,37 @@ describe('nextDueDate', () => {
     expect(nextDueDate('2026-03-31', 1)).toBe('2026-04-30');
   });
 });
+
+import { effectiveDueDate } from '@/lib/payments';
+
+describe('effectiveDueDate', () => {
+  it('devuelve la fecha tal cual si no es recurrente', () => {
+    const p = { ...base, is_recurring: false, due_date: '2026-05-01' };
+    expect(effectiveDueDate(p, '2026-05-07')).toBe('2026-05-01');
+  });
+
+  it('devuelve la fecha tal cual si es recurrente y todavía no vence', () => {
+    const p = { ...base, is_recurring: true, recurrence_months: 1, due_date: '2026-05-15' };
+    expect(effectiveDueDate(p, '2026-05-07')).toBe('2026-05-15');
+  });
+
+  it('devuelve la fecha tal cual si recurrente y vence hoy', () => {
+    const p = { ...base, is_recurring: true, recurrence_months: 1, due_date: '2026-05-07' };
+    expect(effectiveDueDate(p, '2026-05-07')).toBe('2026-05-07');
+  });
+
+  it('avanza al próximo ciclo si recurrente y ya venció', () => {
+    const p = { ...base, is_recurring: true, recurrence_months: 1, due_date: '2026-05-06' };
+    expect(effectiveDueDate(p, '2026-05-07')).toBe('2026-06-06');
+  });
+
+  it('avanza varios ciclos si está muy atrasada', () => {
+    const p = { ...base, is_recurring: true, recurrence_months: 1, due_date: '2026-01-15' };
+    expect(effectiveDueDate(p, '2026-05-07')).toBe('2026-05-15');
+  });
+
+  it('respeta la cadencia anual', () => {
+    const p = { ...base, is_recurring: true, recurrence_months: 12, due_date: '2025-12-01' };
+    expect(effectiveDueDate(p, '2026-05-07')).toBe('2026-12-01');
+  });
+});

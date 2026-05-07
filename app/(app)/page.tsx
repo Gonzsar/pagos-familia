@@ -7,7 +7,7 @@ import { TotalsCards } from '@/components/totals-cards';
 import { PaymentRow } from '@/components/payment-row';
 import { PaymentForm } from '@/components/payment-form';
 import { combineTotals } from '@/lib/currency';
-import { computeDisplayStatus } from '@/lib/payments';
+import { computeDisplayStatus, effectiveDueDate } from '@/lib/payments';
 import { toast } from 'sonner';
 import type { Category, PaymentWithCategory } from '@/lib/types';
 
@@ -53,7 +53,9 @@ export default function DashboardPage() {
     for (const p of payments) {
       // No alertar sobre pagos marcados como "no suma al total" — son los que el usuario consideró no importantes.
       if (p.count_in_totals === false) continue;
-      const s = computeDisplayStatus(p, today);
+      const displayDate = effectiveDueDate(p, today);
+      const dp = displayDate === p.due_date ? p : { ...p, due_date: displayDate };
+      const s = computeDisplayStatus(dp, today);
       if (s === 'vence_hoy' || s === 'vencido') venceHoy++;
       else if (s === 'urgente' || s === 'proximo') estaSemana++;
     }

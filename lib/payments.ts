@@ -19,3 +19,18 @@ export function nextDueDate(currentDueDate: string, recurrenceMonths: number): s
   const next = addMonths(parseISO(currentDueDate), recurrenceMonths);
   return format(next, 'yyyy-MM-dd');
 }
+
+/**
+ * Para pagos recurrentes (que se cobran automáticamente en la realidad), si la
+ * due_date guardada en la DB ya pasó, avanzamos al próximo ciclo para mostrar.
+ * Para pagos únicos devolvemos la due_date tal cual (puede mostrar "vencido").
+ */
+export function effectiveDueDate(payment: Payment, today: string): string {
+  if (!payment.is_recurring) return payment.due_date;
+  let date = payment.due_date;
+  // Loop por las dudas: si está muy atrasada, avanza varios ciclos.
+  while (daysRemaining(date, today) < 0) {
+    date = nextDueDate(date, payment.recurrence_months);
+  }
+  return date;
+}
