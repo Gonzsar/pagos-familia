@@ -26,7 +26,8 @@ const base: Payment = {
   id: 'x', name: 'Test', amount: 10, currency: 'USD',
   due_date: '2026-05-05', category_id: null, payment_method: null,
   is_recurring: true, recurrence_months: 1,
-  status: 'pendiente', notify_enabled: true, count_in_totals: true, notes: null,
+  status: 'pendiente', notify_enabled: true, count_in_totals: true,
+  paid_for_cycle: null, notes: null,
   created_by: null, created_at: '', updated_at: '',
 };
 
@@ -111,5 +112,35 @@ describe('effectiveDueDate', () => {
   it('respeta la cadencia anual', () => {
     const p = { ...base, is_recurring: true, recurrence_months: 12, due_date: '2025-12-01' };
     expect(effectiveDueDate(p, '2026-05-07')).toBe('2026-12-01');
+  });
+});
+
+import { isPaidThisCycle } from '@/lib/payments';
+
+describe('isPaidThisCycle', () => {
+  it('false si no es recurrente', () => {
+    const p = { ...base, is_recurring: false, paid_for_cycle: '2026-05-10', due_date: '2026-05-10' };
+    expect(isPaidThisCycle(p, '2026-05-07')).toBe(false);
+  });
+
+  it('false si paid_for_cycle es null', () => {
+    const p = { ...base, is_recurring: true, paid_for_cycle: null, due_date: '2026-05-10' };
+    expect(isPaidThisCycle(p, '2026-05-07')).toBe(false);
+  });
+
+  it('true si paid_for_cycle coincide con la due_date del ciclo activo', () => {
+    const p = { ...base, is_recurring: true, paid_for_cycle: '2026-05-10', due_date: '2026-05-10' };
+    expect(isPaidThisCycle(p, '2026-05-07')).toBe(true);
+  });
+
+  it('true si se pagó ya antes del vencimiento y vence hoy', () => {
+    const p = { ...base, is_recurring: true, paid_for_cycle: '2026-05-07', due_date: '2026-05-07' };
+    expect(isPaidThisCycle(p, '2026-05-07')).toBe(true);
+  });
+
+  it('false una vez que el ciclo avanza (effectiveDueDate != paid_for_cycle)', () => {
+    // Ayer venció, paid_for_cycle quedó en ayer. Hoy el ciclo avanzó al próximo mes.
+    const p = { ...base, is_recurring: true, recurrence_months: 1, paid_for_cycle: '2026-05-06', due_date: '2026-05-06' };
+    expect(isPaidThisCycle(p, '2026-05-07')).toBe(false);
   });
 });

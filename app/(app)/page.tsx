@@ -7,7 +7,7 @@ import { TotalsCards } from '@/components/totals-cards';
 import { PaymentRow } from '@/components/payment-row';
 import { PaymentForm } from '@/components/payment-form';
 import { combineTotals } from '@/lib/currency';
-import { computeDisplayStatus, effectiveDueDate } from '@/lib/payments';
+import { computeDisplayStatus, effectiveDueDate, isPaidThisCycle } from '@/lib/payments';
 import { toast } from 'sonner';
 import type { Category, PaymentWithCategory } from '@/lib/types';
 
@@ -88,29 +88,40 @@ export default function DashboardPage() {
 
   async function pay(p: PaymentWithCategory) {
     setPayingId(p.id);
-    const res = await fetch(`/api/payments/${p.id}/pay`, { method: 'POST' });
+    // Si es recurrente y ya está marcado como pagado para este ciclo, el click deshace.
+    const isCurrentlyPaidCycle = p.is_recurring && isPaidThisCycle(p, today);
+    const url = isCurrentlyPaidCycle
+      ? `/api/payments/${p.id}/undo-pay`
+      : `/api/payments/${p.id}/pay`;
+
+    const res = await fetch(url, { method: 'POST' });
     if (!res.ok) {
-      toast.error('No se pudo marcar el pago');
+      toast.error(isCurrentlyPaidCycle ? 'No se pudo deshacer' : 'No se pudo marcar el pago');
       setPayingId(null);
       return;
     }
     const updated: PaymentWithCategory = await res.json();
     setPayments(prev => prev.map(x => (x.id === updated.id ? updated : x)));
-    toast.success(`${p.name} marcado como pagado`, {
-      action: {
-        label: 'Deshacer',
-        onClick: async () => {
-          const u = await fetch(`/api/payments/${p.id}/undo-pay`, { method: 'POST' });
-          if (u.ok) {
-            const restored = await u.json();
-            setPayments(prev => prev.map(x => (x.id === restored.id ? restored : x)));
-            toast.success('Pago restaurado');
-          } else {
-            toast.error('No se pudo deshacer');
-          }
+
+    if (isCurrentlyPaidCycle) {
+      toast.success(`${p.name} desmarcado`);
+    } else {
+      toast.success(`${p.name} marcado como pagado`, {
+        action: {
+          label: 'Deshacer',
+          onClick: async () => {
+            const u = await fetch(`/api/payments/${p.id}/undo-pay`, { method: 'POST' });
+            if (u.ok) {
+              const restored = await u.json();
+              setPayments(prev => prev.map(x => (x.id === restored.id ? restored : x)));
+              toast.success('Pago restaurado');
+            } else {
+              toast.error('No se pudo deshacer');
+            }
+          },
         },
-      },
-    });
+      });
+    }
     setPayingId(null);
   }
 

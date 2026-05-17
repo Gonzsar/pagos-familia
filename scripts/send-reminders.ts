@@ -11,6 +11,7 @@ import { format } from 'date-fns';
 
 import type { Payment, Category } from '@/lib/types';
 import { shouldNotify } from '@/lib/notifications';
+import { effectiveDueDate, isPaidThisCycle } from '@/lib/payments';
 import { sendReminderEmail } from '@/lib/email';
 import { sendReminderTelegram } from '@/lib/telegram';
 
@@ -62,29 +63,39 @@ async function main() {
   }
 
   // 3. Filtrar los que están en ventana
+  // Para recurrentes usamos effectiveDueDate (el próximo ciclo cuando la due_date guardada ya pasó).
+  // Skipeamos recurrentes ya marcados como pagados para el ciclo activo.
   type PaymentWithCat = Payment & { category: Category | null };
-  const candidates: { p: PaymentWithCat; w: number }[] = [];
+  const candidates: { p: PaymentWithCat; effective: string; w: number }[] = [];
   for (const p of payments as PaymentWithCat[]) {
-    const w = shouldNotify(p, today, { returnWindow: true });
-    if (w !== null) candidates.push({ p, w });
+    if (isPaidThisCycle(p, today)) {
+      console.log(`[send-reminders] skipping ${p.name}: ya marcado pagado este ciclo`);
+      continue;
+    }
+    const effective = effectiveDueDate(p, today);
+    const effectivePayment = effective === p.due_date ? p : { ...p, due_date: effective };
+    const w = shouldNotify(effectivePayment, today, { returnWindow: true });
+    if (w !== null) candidates.push({ p, effective, w });
   }
   console.log(`[send-reminders] ${candidates.length} payments in notification window`);
 
   let sent = 0, failed = 0, skipped = 0;
-  for (const { p, w } of candidates) {
+  for (const { p, effective, w } of candidates) {
+    // Para el sender/log usamos la fecha efectiva del ciclo (no la due_date original de la DB).
+    const paymentForSend = effective === p.due_date ? p : { ...p, due_date: effective };
     for (const sub of subs as UserSettingsRow[]) {
       const channels: ('email' | 'telegram')[] = [];
       if (sub.notification_email) channels.push('email');
       if (sub.telegram_chat_id) channels.push('telegram');
 
       for (const ch of channels) {
-        // Anti-dup: si ya hay log success=true para este (payment, window, due_date, channel), skip
+        // Anti-dup por ciclo: (payment, window, effective_due_date, channel)
         const { data: existing } = await supabase
           .from('notification_log')
           .select('id')
           .eq('payment_id', p.id)
           .eq('window_days', w)
-          .eq('due_date', p.due_date)
+          .eq('due_date', effective)
           .eq('channel', ch)
           .eq('success', true)
           .maybeSingle();
@@ -97,17 +108,17 @@ async function main() {
           if (ch === 'email' && sub.notification_email) {
             await sendReminderEmail({
               to: sub.notification_email,
-              payment: p,
+              payment: paymentForSend,
               windowDays: w,
               appUrl,
             });
           } else if (ch === 'telegram' && sub.telegram_chat_id) {
-            await sendReminderTelegram({ chatId: sub.telegram_chat_id, payment: p, windowDays: w });
+            await sendReminderTelegram({ chatId: sub.telegram_chat_id, payment: paymentForSend, windowDays: w });
           }
           await supabase.from('notification_log').insert({
             payment_id: p.id,
             window_days: w,
-            due_date: p.due_date,
+            due_date: effective,
             channel: ch,
             success: true,
           });
@@ -119,7 +130,7 @@ async function main() {
           await supabase.from('notification_log').insert({
             payment_id: p.id,
             window_days: w,
-            due_date: p.due_date,
+            due_date: effective,
             channel: ch,
             success: false,
             error_message: msg,

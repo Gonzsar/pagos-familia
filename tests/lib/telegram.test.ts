@@ -16,7 +16,7 @@ const payment: Payment & { category: Category | null } = {
   id: 'p1', name: 'ChatGPT', amount: 20, currency: 'USD',
   due_date: '2026-05-13', category_id: 'c1', payment_method: 'PREX GON',
   is_recurring: true, recurrence_months: 1,
-  status: 'pendiente', notify_enabled: true, count_in_totals: true,
+  status: 'pendiente', notify_enabled: true, count_in_totals: true, paid_for_cycle: null,
   notes: null, created_by: null, created_at: '', updated_at: '',
   category: cat,
 };

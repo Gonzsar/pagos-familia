@@ -19,12 +19,22 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
     return NextResponse.json({ error: 'Solo podés deshacer pagos de las últimas 24 horas' }, { status: 400 });
   }
 
+  // Leer el pago para saber si es recurrente.
+  const { data: payment, error: pErr } = await supabase
+    .from('payments')
+    .select('*')
+    .eq('id', params.id)
+    .single<Payment>();
+  if (pErr || !payment) return NextResponse.json({ error: 'Pago no encontrado' }, { status: 404 });
+
+  // Recurrente: limpiar paid_for_cycle. Único: volver a pendiente.
+  const updatePayload: Partial<Payment> = payment.is_recurring
+    ? { paid_for_cycle: null }
+    : { status: 'pendiente' };
+
   const { data: updated, error: updErr } = await supabase
     .from('payments')
-    .update({
-      due_date: lastEntry.due_date_at_payment,
-      status: 'pendiente',
-    })
+    .update(updatePayload)
     .eq('id', params.id)
     .select('*, category:categories(*)')
     .single<Payment>();

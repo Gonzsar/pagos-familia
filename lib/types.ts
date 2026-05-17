@@ -23,6 +23,7 @@ export interface Payment {
   status: PaymentStatus;
   notify_enabled: boolean;
   count_in_totals: boolean;
+  paid_for_cycle: string | null;  // YYYY-MM-DD. Para recurrentes: marca de "pagado este ciclo".
   notes: string | null;
   created_by: string | null;
   created_at: string;

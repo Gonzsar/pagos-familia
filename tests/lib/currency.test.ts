@@ -20,6 +20,7 @@ const p = (
   status,
   notify_enabled: true,
   count_in_totals: countInTotals,
+  paid_for_cycle: null,
   notes: null,
   created_by: null,
   created_at: '',

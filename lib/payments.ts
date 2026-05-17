@@ -34,3 +34,14 @@ export function effectiveDueDate(payment: Payment, today: string): string {
   }
   return date;
 }
+
+/**
+ * Para pagos recurrentes: ¿está marcado como pagado para el ciclo activo?
+ * paid_for_cycle debe coincidir con la effectiveDueDate actual.
+ * Para únicos siempre devuelve false (esos usan status='pagado').
+ */
+export function isPaidThisCycle(payment: Payment, today: string): boolean {
+  if (!payment.is_recurring) return false;
+  if (!payment.paid_for_cycle) return false;
+  return payment.paid_for_cycle === effectiveDueDate(payment, today);
+}
