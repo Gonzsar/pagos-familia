@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Plus, Trash2, Save } from 'lucide-react';
+import { Plus, Trash2, Save, ChevronUp, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -17,12 +17,14 @@ export function CategoriesSettings() {
   const [creating, setCreating] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState<Category | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [reordering, setReordering] = useState(false);
 
   useEffect(() => {
     fetch('/api/categories')
       .then(r => r.json())
-      .then(d => {
-        setCats(d);
+      .then((d: Category[]) => {
+        // Asegurar orden por position por las dudas (la API ya lo hace).
+        setCats([...d].sort((a, b) => a.position - b.position));
         setLoading(false);
       });
   }, []);
@@ -30,10 +32,11 @@ export function CategoriesSettings() {
   async function add() {
     if (!newName.trim()) return;
     setCreating(true);
+    const maxPos = cats.reduce((m, c) => Math.max(m, c.position), 0);
     const res = await fetch('/api/categories', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: newName.trim(), icon: newIcon.trim() || null, color: '#64748B', position: cats.length + 1 }),
+      body: JSON.stringify({ name: newName.trim(), icon: newIcon.trim() || null, color: '#64748B', position: maxPos + 1 }),
     });
     if (res.ok) {
       const c = await res.json();
@@ -61,6 +64,42 @@ export function CategoriesSettings() {
     } else {
       toast.error('Error al guardar');
     }
+  }
+
+  async function move(index: number, direction: 'up' | 'down') {
+    if (reordering) return;
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= cats.length) return;
+
+    setReordering(true);
+
+    // Update optimista del orden local.
+    const reordered = [...cats];
+    [reordered[index], reordered[newIndex]] = [reordered[newIndex], reordered[index]];
+    // Asignar positions consecutivos basados en el nuevo orden (1, 2, 3, ...).
+    const withNewPositions = reordered.map((c, i) => ({ ...c, position: i + 1 }));
+    setCats(withNewPositions);
+
+    // Mandar los 2 PATCH en paralelo (solo los que cambiaron de posición).
+    const a = withNewPositions[index];
+    const b = withNewPositions[newIndex];
+    try {
+      await Promise.all([
+        fetch(`/api/categories/${a.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ position: a.position }),
+        }),
+        fetch(`/api/categories/${b.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ position: b.position }),
+        }),
+      ]);
+    } catch {
+      toast.error('Error al reordenar — recargá la página');
+    }
+    setReordering(false);
   }
 
   async function actuallyDelete() {
@@ -104,12 +143,17 @@ export function CategoriesSettings() {
         {cats.length === 0 ? (
           <p className="text-slate-500 text-sm">Todavía no hay categorías.</p>
         ) : (
-          cats.map(c => (
+          cats.map((c, i) => (
             <CategoryRow
               key={c.id}
               category={c}
+              isFirst={i === 0}
+              isLast={i === cats.length - 1}
+              reordering={reordering}
               onSave={p => update(c.id, p)}
               onDelete={() => setConfirmingDelete(c)}
+              onMoveUp={() => move(i, 'up')}
+              onMoveDown={() => move(i, 'down')}
             />
           ))
         )}
@@ -156,12 +200,22 @@ export function CategoriesSettings() {
 
 function CategoryRow({
   category,
+  isFirst,
+  isLast,
+  reordering,
   onSave,
   onDelete,
+  onMoveUp,
+  onMoveDown,
 }: {
   category: Category;
+  isFirst: boolean;
+  isLast: boolean;
+  reordering: boolean;
   onSave: (p: Partial<Category>) => Promise<void>;
   onDelete: () => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
 }) {
   const [name, setName] = useState(category.name);
   const [icon, setIcon] = useState(category.icon ?? '');
@@ -174,8 +228,31 @@ function CategoryRow({
     setSaving(false);
   }
 
+  const arrowBtnBase =
+    'h-5 w-5 inline-flex items-center justify-center rounded text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-transparent transition-colors';
+
   return (
     <div className={`${cardClass} flex flex-wrap items-center gap-2 p-3`}>
+      <div className="flex flex-col gap-0.5">
+        <button
+          type="button"
+          onClick={onMoveUp}
+          disabled={isFirst || reordering}
+          aria-label="Subir"
+          className={arrowBtnBase}
+        >
+          <ChevronUp className="h-3.5 w-3.5" />
+        </button>
+        <button
+          type="button"
+          onClick={onMoveDown}
+          disabled={isLast || reordering}
+          aria-label="Bajar"
+          className={arrowBtnBase}
+        >
+          <ChevronDown className="h-3.5 w-3.5" />
+        </button>
+      </div>
       <Input value={icon} onChange={e => setIcon(e.target.value)} className="w-16 text-center text-lg" maxLength={4} />
       <Input value={name} onChange={e => setName(e.target.value)} className="flex-1 min-w-[180px]" />
       {dirty && (
