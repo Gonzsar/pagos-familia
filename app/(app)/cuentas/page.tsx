@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { ArrowLeft, Copy, Check, Landmark } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { ACCOUNTS, bankStyle, type AccountEntry } from '@/lib/accounts';
@@ -97,22 +96,21 @@ export default function CuentasPage() {
                 </div>
 
                 <div className="mt-3 flex items-center gap-2">
-                  <code className="flex-1 px-3 py-2 rounded-md bg-slate-100 dark:bg-slate-800 font-mono text-sm tabular-nums select-all break-all">
+                  <span className="flex-1 px-3 py-2.5 rounded-md bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 font-display font-semibold text-base sm:text-lg tabular-nums tracking-wide select-all break-all">
                     {a.accountNumber}
-                  </code>
-                  <Button
-                    size="sm"
-                    variant="outline"
+                  </span>
+                  <button
+                    type="button"
                     onClick={() => copy(a)}
                     aria-label="Copiar número"
-                    className={
+                    className={`inline-flex items-center justify-center h-10 w-10 rounded-md transition-colors shrink-0 ${
                       isCopied
-                        ? 'text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/50'
-                        : 'text-slate-900 dark:text-slate-100'
-                    }
+                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                        : 'bg-blue-600 hover:bg-blue-700 text-white'
+                    }`}
                   >
-                    {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                  </Button>
+                    {isCopied ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
+                  </button>
                 </div>
               </div>
             );
