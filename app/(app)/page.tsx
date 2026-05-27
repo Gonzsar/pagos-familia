@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Plus, AlertCircle } from 'lucide-react';
+import Link from 'next/link';
+import { Plus, AlertCircle, Landmark } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TotalsCards } from '@/components/totals-cards';
 import { PaymentRow } from '@/components/payment-row';
@@ -194,6 +195,16 @@ export default function DashboardPage() {
         onSaved={onSaved}
         onDeleted={onDeleted}
       />
+
+      {/* Botón flotante a Números de cuentas */}
+      <Link
+        href="/cuentas"
+        className="fixed bottom-6 right-6 z-30 inline-flex items-center gap-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-5 py-3 shadow-lg shadow-blue-600/30 transition-colors"
+      >
+        <Landmark className="h-5 w-5" />
+        <span className="hidden sm:inline">Números de cuentas</span>
+        <span className="sm:hidden">Cuentas</span>
+      </Link>
     </div>
   );
 }
