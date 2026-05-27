@@ -95,11 +95,11 @@ export function PaymentRow({ payment, today, onEdit, onPay, isPaying }: Props) {
         </p>
       </div>
 
-      <div className={`hidden sm:block text-right tabular-nums font-mono text-sm w-32 ${strikeClass}`}>
+      <div className={`hidden sm:block text-right font-display font-semibold tabular-nums tracking-wide text-sm w-32 ${strikeClass}`}>
         {formatAmount(payment.amount, payment.currency)}
       </div>
 
-      <div className="hidden md:block text-right text-sm w-28 text-slate-800 dark:text-slate-200 font-medium tabular-nums">
+      <div className="hidden md:block text-right font-display font-medium tabular-nums tracking-wide text-sm w-28 text-slate-800 dark:text-slate-200">
         {displayDate.split('-').reverse().join('/')}
       </div>
 
