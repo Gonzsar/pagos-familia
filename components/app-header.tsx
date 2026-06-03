@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { Wallet, Settings, History, LogOut, User, ChevronDown } from 'lucide-react';
+import { Wallet, Settings, History, LogOut, User, ChevronDown, Cake } from 'lucide-react';
 
 interface Props {
   userEmail: string;
@@ -72,6 +72,14 @@ export function AppHeader({ userEmail }: Props) {
               <div className="px-3 py-2 text-xs font-medium text-slate-500 dark:text-slate-400 border-b dark:border-slate-700 truncate">
                 {userEmail}
               </div>
+              <Link
+                href="/recordatorios"
+                onClick={() => setOpen(false)}
+                role="menuitem"
+                className="flex items-center gap-2 px-3 py-2.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                <Cake className="h-4 w-4" /> Cumpleaños
+              </Link>
               <Link
                 href="/history"
                 onClick={() => setOpen(false)}
